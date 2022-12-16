@@ -1,8 +1,8 @@
-﻿@page
+﻿@page "{id:int?}"
 @model Marchis_Adrian_Lab2.Pages.Categories.IndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Categorii";
 }
 
 <h1>Index</h1>
@@ -20,17 +20,52 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Category) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.CategoryName)
-            </td>
-            <td>
+        @foreach (var item in Model.CategoryData.Categories)
+        {
+            string selectedRow = "";
+            if (item.Id == Model.CategoryId)
+            {
+                selectedRow = "table-success";
+            }
+            <tr class="@selectedRow">
+                <td>
+                    @Html.DisplayFor(modelItem => item.CategoryName)
+                </td>
+                <td>
+                <a asp-page="./Index" asp-route-id="@item.Id">Select</a> |
                 <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
                 <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+@if (Model.CategoryData.Books != null)
+{
+    <h3>Books in category</h3>
+    <table class="table">
+
+        @foreach (var item in Model.CategoryData.Categories)
+        {
+            string selectedRow = "";
+            if (item.Id == Model.CategoryId)
+            {
+                selectedRow = "table-success";
+            }
+            <tr class="@selectedRow">
+                <td>
+                    @{
+                        foreach (var b in item.Books)
+                        {
+
+                            @b.Title @: @b.Author.FullName
+
+                            <br />
+                        }
+                    }
+                </td>
+            </tr>
+        }
+     </table>
+}

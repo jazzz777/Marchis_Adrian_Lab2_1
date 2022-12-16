@@ -17,10 +17,31 @@ namespace Marchis_Adrian_Lab2.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.10")
+                .HasAnnotation("ProductVersion", "6.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+
+            modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Author", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Author");
+                });
 
             modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Book", b =>
                 {
@@ -30,9 +51,11 @@ namespace Marchis_Adrian_Lab2.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("AuthorId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("DataPublicarii")
                         .HasColumnType("datetime2");
@@ -45,9 +68,14 @@ namespace Marchis_Adrian_Lab2.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("PublisherId");
 
@@ -56,16 +84,16 @@ namespace Marchis_Adrian_Lab2.Migrations
 
             modelBuilder.Entity("Marchis_Adrian_Lab2.Models.BookCategory", b =>
                 {
-                    b.Property<int?>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<int?>("BookId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CategoryId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -75,6 +103,32 @@ namespace Marchis_Adrian_Lab2.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("BookCategory");
+                });
+
+            modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Borrowing", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+
+                    b.Property<int?>("BookID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MemberID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ReturnDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("BookID");
+
+                    b.HasIndex("MemberID");
+
+                    b.ToTable("Borrowing");
                 });
 
             modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Category", b =>
@@ -92,6 +146,35 @@ namespace Marchis_Adrian_Lab2.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Category");
+                });
+
+            modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Member", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+
+                    b.Property<string>("Adress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Member");
                 });
 
             modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Publisher", b =>
@@ -113,9 +196,21 @@ namespace Marchis_Adrian_Lab2.Migrations
 
             modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Book", b =>
                 {
+                    b.HasOne("Marchis_Adrian_Lab2.Models.Author", "Author")
+                        .WithMany("Books")
+                        .HasForeignKey("AuthorId");
+
+                    b.HasOne("Marchis_Adrian_Lab2.Models.Category", "Category")
+                        .WithMany("Books")
+                        .HasForeignKey("CategoryId");
+
                     b.HasOne("Marchis_Adrian_Lab2.Models.Publisher", "Publisher")
                         .WithMany("Books")
                         .HasForeignKey("PublisherId");
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Category");
 
                     b.Navigation("Publisher");
                 });
@@ -128,11 +223,33 @@ namespace Marchis_Adrian_Lab2.Migrations
 
                     b.HasOne("Marchis_Adrian_Lab2.Models.Category", "Category")
                         .WithMany("BookCategories")
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Book");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Borrowing", b =>
+                {
+                    b.HasOne("Marchis_Adrian_Lab2.Models.Book", "Book")
+                        .WithMany()
+                        .HasForeignKey("BookID");
+
+                    b.HasOne("Marchis_Adrian_Lab2.Models.Member", "Member")
+                        .WithMany("Borrowings")
+                        .HasForeignKey("MemberID");
+
+                    b.Navigation("Book");
+
+                    b.Navigation("Member");
+                });
+
+            modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Author", b =>
+                {
+                    b.Navigation("Books");
                 });
 
             modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Book", b =>
@@ -143,6 +260,13 @@ namespace Marchis_Adrian_Lab2.Migrations
             modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Category", b =>
                 {
                     b.Navigation("BookCategories");
+
+                    b.Navigation("Books");
+                });
+
+            modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Member", b =>
+                {
+                    b.Navigation("Borrowings");
                 });
 
             modelBuilder.Entity("Marchis_Adrian_Lab2.Models.Publisher", b =>

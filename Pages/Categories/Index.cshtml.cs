@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Marchis_Adrian_Lab2.Data;
 using Marchis_Adrian_Lab2.Models;
+using Marchis_Adrian_Lab2.Models.ViewModels;
+using System.Security.Policy;
 
 namespace Marchis_Adrian_Lab2.Pages.Categories
 {
@@ -21,11 +23,23 @@ namespace Marchis_Adrian_Lab2.Pages.Categories
 
         public IList<Category> Category { get;set; } = default!;
 
-        public async Task OnGetAsync()
+        public CategoryIndexData CategoryData { get; set; }
+        public int CategoryId { get; set; }
+        public int BookID { get; set; }
+        public async Task OnGetAsync(int? id, int? bookID)
         {
-            if (_context.Category != null)
+            CategoryData = new CategoryIndexData();
+            CategoryData.Categories = await _context.Category
+                .Include(i => i.Books)
+                    .ThenInclude(c => c.Author)
+                .OrderBy(i => i.CategoryName)
+                .ToListAsync();
+            if (id != null)
             {
-                Category = await _context.Category.ToListAsync();
+                CategoryId = id.Value;
+                Category category = CategoryData.Categories
+                    .Where(i => i.Id == id.Value).Single();
+                CategoryData.Books = category.Books;
             }
         }
     }
